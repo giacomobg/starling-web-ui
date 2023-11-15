@@ -112,6 +112,10 @@
     parsed_json = false;
     import_json();
   }
+  $: {
+    filename;
+    visiblePane = 'replay-web';
+  }
 
 </script>
 
