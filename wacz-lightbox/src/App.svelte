@@ -237,7 +237,7 @@
   }
 
   #panes-container {
-    height: calc(50vh - 80px);
+    height: calc(100vh - 56px);
   }
 
   replay-web-page {
@@ -338,9 +338,9 @@
     /* margin: 40px; */
     /* padding: 40px; */
     overflow-wrap: break-word;
-    height: calc(50vh - 56px);
+    /* height: calc(50vh - 56px);
     display: block;
-    overflow: auto;
+    overflow: auto; */
   }
 
   .no-display {
