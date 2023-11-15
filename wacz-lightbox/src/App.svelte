@@ -19,7 +19,7 @@
   // $: mobile = innerWidth < 650;
   let visiblePane = 'replay-web';
 
-  let url, archive_name, date_crawled_formatted, domain, domainCert,
+  let url, archive_name, date_crawled_formatted, domain, domainCert, showDomainCert,
     package_hash, iscn, numbers, avalanche, ipfs, filecoin,
     page_name, sha256Hash;
   let parsed_json = false;
@@ -37,10 +37,17 @@
       // console.log(json_content);
 
       page_name = json_content?.name;
-      if (json_content?.private?.crawl_config?.config?.seeds) {
-        url = json_content?.private?.crawl_config?.config?.seeds[0]?.url;
-      } else {
-        url = json_content?.private?.crawl_config?.firstSeed;
+      if (json_content?.private?.crawl_config) { // Browsertrix
+        if (json_content?.private?.crawl_config?.config?.seeds) {
+          url = json_content?.private?.crawl_config?.config?.seeds[0]?.url;
+        } else {
+          url = json_content?.private?.crawl_config?.firstSeed;
+        }
+      } else {  // WebRecorder
+        console.log(json_content?.extras?.wacz?.pages);
+        let firstKey = Object.keys(json_content?.extras?.wacz?.pages)[0];
+        console.log(firstKey);      
+        url=json_content?.extras?.wacz?.pages[firstKey];
       }
       if (json?.sourceId?.value) {
         archive_name = json?.sourceId?.value;
@@ -51,15 +58,24 @@
       let formatter = new Intl.DateTimeFormat('en-US', {year: 'numeric', month: 'long', day: 'numeric',});
       let date_parts = formatter.formatToParts(date_crawled);
       date_crawled_formatted = (date_parts[2].value + ' ' + date_parts[0].value + ' ' + date_parts[4].value);
-      domain = json_content?.validatedSignatures[0]?.custom?.domain;
-      domainCert = json_content?.validatedSignatures[0]?.custom?.domainCert;
-      package_hash = json_content?.validatedSignatures[0]?.custom?.hash;
+      if (json_content?.validatedSignatures[0]?.custom) { // Certificate
+        domain = json_content?.validatedSignatures[0]?.custom?.domain;
+        domainCert = json_content?.validatedSignatures[0]?.custom?.domainCert;
+        package_hash = json_content?.validatedSignatures[0]?.custom?.hash;
+        showDomainCert=true;
+      } else { // Local Key
+        domain=json_content?.validatedSignatures[0]?.publicKey;
+        showDomainCert=false;
+        package_hash=json_content?.validatedSignatures[0]?.authenticatedMessage
+      }
       iscn = json?.registrationRecords?.iscn?.txHash;
       numbers = json?.registrationRecords?.numbersProtocol?.numbers?.txHash;
       avalanche = json?.registrationRecords?.numbersProtocol?.avalanche?.txHash;
       ipfs = json?.content?.cid;
       filecoin = "baga6ea4seaqflgunguw3rpwzdf47wzb4m6664pnj2732cddj4uh45x4xg5kuoma";
-      hash(domainCert).then(h => sha256Hash = h);
+      if (showDomainCert) {
+        hash(domainCert).then(h => sha256Hash = h);
+      }
       // console.log('parsed json');
       parsed_json = true;
   }
@@ -162,13 +178,15 @@
                 <span class="tooltiptext plus">The date and time that the website archive was captured</span>: 
                 {upperCase(date_crawled_formatted)}
               </p>
-            </div>  
+            </div>
             <div class="tooltip plus">
               <p><strong>{upperCase('Observed by')}<span class="far fa-question-circle">i</span></strong>
                 <span class="tooltiptext plus">The notary, signed with a cryptographic certificate to establish a witness</span>: 
                 {upperCase(domain)}
                 <br>
+                {#if showDomainCert}
                 <a href={'https://crt.sh/?q='+sha256Hash} target="_blank" rel="noopener noreferrer">{upperCase('View certificate')}</a>
+                {/if}
               </p>
             </div>
             <div class="tooltip plus">
