@@ -111,3 +111,6 @@ The export keyword in Svelte is used to define variables called props and by def
 `export let filename = 'mono-county-pdf-01-2023-08-25T15-57-33.wacz';`
 
 at the top of App.svelte sets filename as a prop and gives it a default value.
+
+### Example Plugin  
+See an example of the wordpress plugin used on the Blaock Voice News wordpress at [https://github.com/starlinglab/bvn-wordpess-plugin/](https://github.com/starlinglab/bvn-wordpess-plugin/)
